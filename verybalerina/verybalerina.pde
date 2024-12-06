@@ -1,19 +1,24 @@
-
 import ddf.minim.*; 
 
 Minim minim; 
 AudioInput audioInput; 
 float amplitude; 
 
-int numFrames = 6; // Number of unique frames
+int numFrames = 7; // Number of unique frames for the bow animation
 int currentFrame = 0; // Current frame index
 int direction = 1; // Direction of playback: 1 (forward), -1 (backward)
 PImage[] images = new PImage[numFrames];
 float threshold = 0.01; // Amplitude threshold for triggering animation
 boolean soundActive = false; // Tracks if sound is currently triggering animation
 
+// Variables for idle animation
+PImage idleFrame1, idleFrame2;
+boolean showingIdleFrame1 = true;
+int lastIdleSwitchTime = 0; // Tracks time for switching idle frames
+int idleSwitchInterval = 500; // Interval for switching idle frames (1 second)
+
 void setup() {
-  size(1000, 1000); 
+  size(1140, 1708); 
   frameRate(12);
   imageMode(CENTER);
 
@@ -22,19 +27,27 @@ void setup() {
   audioInput = minim.getLineIn(Minim.MONO, 512);
   println("AudioInput: " + audioInput);
 
-  // Load images
+  // Load animation frames
   for (int i = 0; i < numFrames; i++) {
     images[i] = loadImage("balett" + (i + 1) + ".jpg");
     if (images[i] == null) {
       println("Failed to load image at index: " + i);
     }
   }
+
+  // Load idle animation frames
+  idleFrame1 = loadImage("balett1.jpg");
+  idleFrame2 = loadImage("balett2.jpg");
+
+  if (idleFrame1 == null || idleFrame2 == null) {
+    println("Failed to load idle frames.");
+  }
 }
 
 void draw() { 
   background(0); 
 
-  if (audioInput != null && images[currentFrame] != null) {
+  if (audioInput != null) {
     amplitude = audioInput.mix.level();
 
     if (amplitude > threshold) {
@@ -47,19 +60,37 @@ void draw() {
       if (currentFrame >= numFrames - 1) {
         currentFrame = numFrames - 1; // Hold at the bowing position
       }
-    } else {
+    } else if (currentFrame > 0) {
       // No sound, recover back to standing position
       soundActive = false;
-      if (currentFrame > 0) {
-        direction = -1; // Move backward toward frame 1
-        currentFrame += direction;
-      }
+      direction = -1; // Move backward toward frame 0
+      currentFrame += direction;
+    } else {
+      // No sound and at idle position: play idle animation
+      soundActive = false;
+      playIdleAnimation();
+      return; // Exit early to avoid drawing bow animation
     }
 
-    // Display the current frame
+    // Display the current frame of the bow animation
     image(images[currentFrame], width / 2, height / 2);
   } else {
     println("Audio input or image not initialized properly.");
+  }
+}
+
+void playIdleAnimation() {
+  // Switch between idle frames based on the timer
+  if (millis() - lastIdleSwitchTime >= idleSwitchInterval) {
+    showingIdleFrame1 = !showingIdleFrame1;
+    lastIdleSwitchTime = millis();
+  }
+
+  // Display the current idle frame
+  if (showingIdleFrame1) {
+    image(idleFrame1, width / 2, height / 2);
+  } else {
+    image(idleFrame2, width / 2, height / 2);
   }
 }
 
