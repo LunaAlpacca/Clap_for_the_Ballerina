@@ -8,7 +8,7 @@ int numFrames = 7; // Number of unique frames for the bow animation
 int currentFrame = 0; // Current frame index
 int direction = 1; // Direction of playback: 1 (forward), -1 (backward)
 PImage[] images = new PImage[numFrames];
-float threshold = 0.01; // Amplitude threshold for triggering animation
+float threshold = 0.001; // Amplitude threshold for triggering animation
 boolean soundActive = false; // Tracks if sound is currently triggering animation
 
 // Variables for idle animation
@@ -18,7 +18,8 @@ int lastIdleSwitchTime = 0; // Tracks time for switching idle frames
 int idleSwitchInterval = 500; // Interval for switching idle frames (1 second)
 
 void setup() {
-  size(1140, 1708); 
+  size(890, 1408); 
+  surface.setResizable(true);
   frameRate(12);
   imageMode(CENTER);
 
